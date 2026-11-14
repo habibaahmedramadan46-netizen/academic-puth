@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 
-st.set_page_config(page_title="تحديد المسار الدراسي", page_icon="🎓", layout="centered")
+st.set_page_config(page_title="تحديد المسار الدراسي", layout="centered")
 
 st.markdown("""
     <style>
@@ -26,16 +26,18 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-st.title("🎓 تحديد المسار الدراسي")
+st.title("تحديد المسار الدراسي")
 st.caption("ابتكار الطالبة: حبيبة أحمد رمضان - الصف الأول الثانوي")
 st.write("أجب عن الأسئلة الـ 30 التالية بدقة لاكتشاف المسار الأكاديمي والمهني الأنسب لقدراتك وميولك النفسية.")
 st.divider()
 
+SHEET_URL = "https://google.com"
+
 try:
-    df_questions = pd.read_excel("data.xlsx", sheet_name="الورقة1")
-    df_tracks = pd.read_excel("data.xlsx", sheet_name="الورقة2")
+    df_questions = pd.read_excel(SHEET_URL, sheet_name="الورقة1")
+    df_tracks = pd.read_excel(SHEET_URL, sheet_name="الورقة2")
 except Exception as e:
-    st.error("حدث خطأ في قراءة ملف البيانات. تأكد من رفع ملف data.xlsx بشكل صحيح.")
+    st.error("حدث خطأ في الاتصال بقاعدة البيانات. تأكد من اتصالك بالإنترنت.")
     st.stop()
 
 user_answers = []
@@ -52,34 +54,39 @@ for index, row in df_questions.iterrows():
     user_answers.append(choice)
     st.write("")
 
-if st.button("🔍 تحليل الإجابات وإظهار المسار المناسب"):
+if st.button("تحليل الإجابات وإظهار المسار المناسب"):
     if None in user_answers:
-        st.warning("⚠️ من فضلك أجب على جميع الأسئلة الـ 30 أولاً قبل عرض النتيجة.")
+        st.warning("من فضلك أجب على جميع الأسئلة الـ 30 أولاً قبل عرض النتيجة.")
     else:
-        scores = [0, 0, 0, 0]
+        s0 = 0
+        s1 = 0
+        s2 = 0
+        s3 = 0
         
         for index, row in df_questions.iterrows():
             ans = user_answers[index]
             if ans == row['الاختيار أ']:
-                scores[0] += 1
+                s0 = s0 + 1
             elif ans == row['الاختيار ب']:
-                scores[1] += 1
+                s1 = s1 + 1
             elif ans == row['الاختيار ج']:
-                scores[2] += 1
+                s2 = s2 + 1
             elif ans == row['الاختيار د']:
-                scores[3] += 1
+                s3 = s3 + 1
 
+        scores = [s0, s1, s2, s3]
         best_track_idx = scores.index(max(scores))
         best_track = df_tracks.iloc[best_track_idx]
 
         st.balloons()
-        st.success(f"🎉 المسار الأنسب لك هو: **{best_track['إسم المسار']}**")
-        st.info(f"🏫 **الكليات المناسبة لك:**\n\n {best_track['الكليات المناسبة']}")
-        st.warning(f"💡 **نصيحة التفوق والبدء:**\n\n {best_track['نصيحة التفوق']}")
+        st.success(f"المسار الأنسب لك هو: **{best_track['إسم المسار']}**")
+        st.info(f"**الكليات المناسبة لك:**\n\n {best_track['الكليات المناسبة']}")
+        st.warning(f"**نصيحة التفوق والبدء:**\n\n {best_track['نصيحة التفوق']}")
 
-        st.subheader("📊 تحليل توافقك مع جميع المسارات:")
+        st.subheader("تحليل توافقك مع جميع المسارات:")
         chart_data = pd.DataFrame({
             "المسار": df_tracks['إسم المسار'],
             "النسبة المئوية (%)": [(scores[i] / len(df_questions)) * 100 for i in range(4)]
         })
         st.bar_chart(chart_data.set_index("المسار"))
+                
